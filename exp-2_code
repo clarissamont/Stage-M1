@@ -1,0 +1,118 @@
+function main_analysis_exp2
+
+try
+clc
+close all
+
+% define folder paths
+this_path = fileparts(mfilename('fullpath'));
+root_path = fileparts(this_path);
+data_path = fullfile(root_path,'Data','cleaned_data');
+figure_path = fullfile(this_path,'figures');
+log_path = fullfile(this_path,'log');
+addpath(genpath(fullfile(this_path,'shared_codes')))
+record_notes(log_path,'exp2_stats_log')
+record_notes('on')
+
+disp(' --------  DATA ANALYSIS EXP 2  ---------- ')
+data = readtable(fullfile(data_path,'exp2.xlsx'));
+dispi('Loaded file ','exp2.xlsx');
+
+%Restrain to 5 columns, exclude data from story blocks, and select only MO or TP events and non-nan blocks
+d = data((data.Block~=1)&(data.Block~=5)&(isnan(data.Block)==0)&((strcmp(data.Mouth,'MO'))|(strcmp(data.Mouth,'TP'))),...
+    {'Subject','Condition','Block','Mouth','Match'});
+dispi('Excluded stoy blocks and selected MO/TP events only');
+
+% define block durations in sec
+baseline_duration = 25/60;
+other_duration = 67*4/60;
+
+% Aggregate data to have counts
+subject_list = table2array(unique(d(:,'Subject')));
+Subject=[];Language=[];Block=[];Nb_of_events=[]; Nb_of_matches = [];
+for i=1:numel(subject_list)
+    Subject=[Subject;subject_list(i);subject_list(i)];
+    tmp = d(d.Subject==subject_list(i),{'Condition'});
+    Language=[Language; tmp{1,1};tmp{1,1}];
+    Block = [Block; 0; 1];
+    Nb_of_events = [Nb_of_events; round(size(d((d.Subject==subject_list(i))&(d.Block==0),:),1)./baseline_duration);...
+                                 round(size(d((d.Subject==subject_list(i))&(d.Block~=0),:),1)./other_duration)];
+    Nb_of_matches = [Nb_of_matches; nan; size(d((d.Subject==subject_list(i))&(d.Match==1),:),1)];
+end
+dd=table(Subject,Language,Block,Nb_of_events,Nb_of_matches,'VariableNames',{'Subject','Language','Block','Nb_of_events','Nb_of_matches'});
+disp('Aggregated data:')
+disp(dd)
+
+disp('(log-linear) Poisson regression model (Generalized Linear Model) for the nb of matches')
+mdl1 =  fitglm(dd(dd.Block==1,{'Language','Nb_of_matches'}),'linear','Distribution','poisson','CategoricalVars','Language');
+disp(mdl1)
+disp('No effect of Language on Matches')
+disp('Check for homogeneity of data:')
+disp('Subject 5 is an outlier, and, after removing it, subjects 1, 3, 8 and 15 too, according to their Cooks distances')
+disp('This signs a strong hetereogeneity in the sample');
+disp('Lets see whether conclusions stand after excluding them')
+figure('Color', 'w');
+subplot(2,2,1)
+plotDiagnostics(mdl1,'cookd')
+subplot(2,2,2)
+plotResiduals(mdl1,'fitted','ResidualType','Pearson')
+mdl2 =  fitglm(dd(dd.Block==1,{'Language','Nb_of_matches'}),'linear','Distribution','poisson','CategoricalVars','Language','exclude',[1,3,5,8,15]);
+disp(mdl2)
+disp('Significant effect of Language')
+subplot(2,2,3)
+plotDiagnostics(mdl2,'cookd')
+disp('Check for homogeneity of data: OK')
+subplot(2,2,4)
+plotResiduals(mdl2,'fitted','ResidualType','Pearson')
+%save data figure
+    graphName='exp2_glm_matches.png';
+    saveas(gcf,fullfile(figure_path,graphName))
+figure('Color', 'w');
+plotDotsX(1,table2array(dd(strcmp(dd.Language,'FR'),'Nb_of_matches')),0.1,1,'or'); hold on;
+plotDotsX(1.2,table2array(dd(strcmp(dd.Language,'ENG'),'Nb_of_matches')),0.1,1,'ob'); 
+axis([0.9, 1.3, 0, max(dd.Nb_of_matches)+1]); xlabel('Language'); ylabel('Nb of matching oro-facial events'); xticks([1,1.2]); xticklabels({'native', 'non-native'});
+%save data figure
+    graphName='exp2_results_match.png';
+    saveas(gcf,fullfile(figure_path,graphName))
+disp(' ----------------------------------------- ')
+
+disp('Applying Generalized Mixed-Effect model to nb of MO/TP events by min with interaction baseline vs. demo/response blocks')
+mdl3 =  fitglme(dd(:,{'Subject','Language','Block','Nb_of_events'}),'Nb_of_events ~ 1 +  Language*Block + (1|Subject)','Distribution','Poisson','Link','log');
+disp(mdl3)
+disp('No effect of Language, Block or Interaction')
+figure('Color', 'w');
+plotResiduals(mdl3,'fitted','ResidualType','Pearson')
+disp('Check for residuals: OK')
+%save data figure
+    graphName='exp2_glm_residuals.png';
+    saveas(gcf,fullfile(figure_path,graphName))
+    
+% figure('Color', 'w');
+% y1 = table2array(dd(strcmp(dd.Language,'FR')&dd.Block==0,'Nb_of_events'));
+% y2 = table2array(dd(strcmp(dd.Language,'FR')&dd.Block==1,'Nb_of_events'));
+% plot([1,2],[y1,y2],'-r'); hold on;
+% y3 = table2array(dd(strcmp(dd.Language,'ENG')&dd.Block==0,'Nb_of_events'));
+% y4 = table2array(dd(strcmp(dd.Language,'ENG')&dd.Block==1,'Nb_of_events'));
+% plot([1,2],[y3,y4],'-b'); hold on; legend({'Native','Non-Native'})
+% axis([0.8, 2.2, 0, max(dd.Nb_of_events)+1]); xlabel('Phase'); ylabel('Nb of oro-facial events by min'); 
+% xticks([1,2]); xticklabels({'Baseline', 'Demo+Response'});
+
+figure('Color', 'w');
+y1 = table2array(dd(strcmp(dd.Language,'FR')&dd.Block==0,'Nb_of_events'));
+y2 = table2array(dd(strcmp(dd.Language,'FR')&dd.Block==1,'Nb_of_events'));
+plotDotsX(1,y2-y1,0.1,1,'or'); hold on;
+y3 = table2array(dd(strcmp(dd.Language,'ENG')&dd.Block==0,'Nb_of_events'));
+y4 = table2array(dd(strcmp(dd.Language,'ENG')&dd.Block==1,'Nb_of_events'));
+plotDotsX(1.4,y4-y3,0.1,1,'ob'); hold on;
+axis([0.8, 1.6, -12, 8]); xlabel('Language'); ylabel('Difference to baseline (events/min)'); title('Oro-facial events');
+xticks([1,1.4]); xticklabels({'native', 'non-native'});
+
+%save data figure
+    graphName='exp2_results_events.png';
+    saveas(gcf,fullfile(figure_path,graphName))
+disp(' ----------------------------------------- ')  
+record_notes('off')
+catch err
+   keyboard 
+    
+end
