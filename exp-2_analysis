@@ -1,0 +1,132 @@
+ --------  DATA ANALYSIS EXP 2  ---------- 
+[Warning: Variable names were modified to make them valid MATLAB identifiers. The original names are saved in the VariableDescriptions property.] 
+Loaded file exp2.xlsx
+Excluded stoy blocks and selected MO/TP events only
+Aggregated data:
+    Subject    Language    Block    Nb_of_events    Nb_of_matches
+    _______    ________    _____    ____________    _____________
+
+     1         'ENG'       0         0              NaN          
+     1         'ENG'       1         2                1          
+     2         'ENG'       0         2              NaN          
+     2         'ENG'       1         2                6          
+     3         'ENG'       0         2              NaN          
+     3         'ENG'       1         8               20          
+     4         'ENG'       0         2              NaN          
+     4         'ENG'       1         4               11          
+     5         'ENG'       0        24              NaN          
+     5         'ENG'       1        18               54          
+     6         'ENG'       0         2              NaN          
+     6         'ENG'       1         5                9          
+     7         'ENG'       0         0              NaN          
+     7         'ENG'       1         7               15          
+     8         'FR'        0        10              NaN          
+     8         'FR'        1        14               38          
+     9         'FR'        0         0              NaN          
+     9         'FR'        1         4               17          
+    10         'FR'        0        17              NaN          
+    10         'FR'        1         6               13          
+    11         'FR'        0         0              NaN          
+    11         'FR'        1         3                7          
+    12         'FR'        0         7              NaN          
+    12         'FR'        1         8               19          
+    13         'FR'        0         0              NaN          
+    13         'FR'        1         6               15          
+    14         'FR'        0         5              NaN          
+    14         'FR'        1         4               12          
+    15         'FR'        0         2              NaN          
+    15         'FR'        1         0                0          
+
+(log-linear) Poisson regression model (Generalized Linear Model) for the nb of matches
+
+Generalized linear regression model:
+    log(Nb_of_matches) ~ 1 + Language
+    Distribution = Poisson
+
+Estimated Coefficients:
+                   Estimate        SE        tStat        pValue   
+                   _________    ________    ________    ___________
+
+    (Intercept)       2.8077    0.092848       30.24    7.1397e-201
+    Language_FR    -0.091331     0.12994    -0.70286        0.48215
+
+
+15 observations, 13 error degrees of freedom
+Dispersion: 1
+Chi^2-statistic vs. constant model: 0.494, p-value = 0.482
+
+No effect of Language on Matches
+
+Check for homogeneity of data:
+Subject 5 is an outlier, and, after removing it, subjects 1, 3, 8 and 15 too, according to their Cooks distances
+This signs a strong hetereogeneity in the sample
+Lets see whether conclusions stand after excluding them
+
+Generalized linear regression model:
+    log(Nb_of_matches) ~ 1 + Language
+    Distribution = Poisson
+
+Estimated Coefficients:
+                   Estimate      SE       tStat       pValue  
+                   ________    _______    ______    __________
+
+    (Intercept)    2.3273      0.15617    14.902    3.2059e-50
+    Language_FR    0.2998      0.19089    1.5706       0.11628
+
+
+10 observations, 8 error degrees of freedom
+Dispersion: 1
+Chi^2-statistic vs. constant model: 2.54, p-value = 0.111
+Significant effect of Language
+Check for homogeneity of data: OK
+ 
+
+ 
+
+
+ ----------------------------------------- 
+Applying Generalized Mixed-Effect model to nb of MO/TP events by min with interaction baseline vs. demo/response blocks
+
+We used a Poisson distribution and the intercept was different for each subject to catch their variability.
+
+Generalized linear mixed-effects model fit by PL
+
+Model information:
+    Number of observations              30
+    Fixed effects coefficients           4
+    Random effects coefficients         15
+    Covariance parameters                1
+    Distribution                    Poisson
+    Link                            Log   
+    FitMethod                       MPL   
+
+Formula:
+    Nb_of_events ~ 1 + Language*Block + (1 | Subject)
+
+Model fit statistics:
+    AIC       BIC       LogLikelihood    Deviance
+    96.337    103.34    -43.169          86.337  
+
+Fixed effects coefficients (95% CIs):
+    Name                       Estimate    SE         tStat       DF    pValue       Lower       Upper  
+    '(Intercept)'                1.1857    0.35416      3.3479    26    0.0024911      0.4577     1.9137
+    'Language_FR'                0.2174     0.4803     0.45264    26      0.65456    -0.76987     1.2047
+    'Block'                     0.36291    0.23019      1.5765    26        0.127    -0.11026    0.83608
+    'Language_FR:Block'        -0.26982     0.3156    -0.85493    26       0.4004    -0.91853     0.3789
+
+Random effects covariance parameters:
+Group: Subject (15 Levels)
+    Name1                Name2                Type         Estimate
+    '(Intercept)'        '(Intercept)'        'std'        0.77763 
+
+Group: Error
+    Name                      Estimate
+    'sqrt(Dispersion)'        1       
+
+No effect of Language, Block or Interaction
+Check for residuals: OK – no fanning effect, no outliers
+
+ 
+ 
+
+ ----------------------------------------- 
