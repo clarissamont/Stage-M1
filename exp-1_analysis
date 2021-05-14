@@ -57,6 +57,7 @@ Chi^2-statistic vs. constant model: 9.13, p-value = 0.00252
 Significant effect of Language
 Check for homogeneity of data: OK
 
+SEE FIGURE: https://github.com/clarissamont/Stage-M1/blob/main/README.md#experiment-1-fig-1
  ----------------------------------------- 
 Adding language background to the data and model, with interactions
 Rebuild data adding bilingual subjects
@@ -124,6 +125,6 @@ Chi^2-statistic vs. constant model: 19.3, p-value = 0.000232
 Significant effect of Language only
 Check for homogeneity of data: OK
  
-
+SEE FIGURES: https://github.com/clarissamont/Stage-M1#experiment-1-figs-2--3
 
 ----------------------------------------- 
