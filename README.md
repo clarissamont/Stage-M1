@@ -4,8 +4,7 @@
 In this repository is the MATLAB data, code, and analyses for experiments 1 and 2 of my M1 internship about newborn language preference, imitation, and social cognition. 
 
 TO DO: 
-
-add raw data
+add figure descriptions
 
 # Figures from analyses
 ## Experiment 1, Fig. 1
